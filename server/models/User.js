@@ -9,8 +9,6 @@ const userSchema = new mongoose.Schema({
   department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
   year: { type: String },
   image_url: { type: String },
-  resetPasswordOTP: { type: String },
-  resetPasswordExpires: { type: Date },
   emailVerificationOTP: { type: String },
   emailVerificationExpires: { type: Date },
   isEmailVerified: { type: Boolean, default: false },

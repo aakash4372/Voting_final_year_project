@@ -10,7 +10,12 @@ const electionSchema = new mongoose.Schema({
     enum: ["upcoming", "ongoing", "completed"], 
     default: "upcoming" 
   },
-  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  created_by: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User", 
+    required: true,
+    immutable: true // 🔒 cannot be changed after creation
+  }
 }, { timestamps: true });
 
 export default mongoose.model("Election", electionSchema);

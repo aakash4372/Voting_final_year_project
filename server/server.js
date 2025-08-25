@@ -16,7 +16,8 @@ import resultRoutes from "./routes/resultRoutes.js";
 
 // Load environment variables
 dotenv.config();
-
+console.log("EMAIL_USER=", process.env.EMAIL_USER);
+console.log("EMAIL_PASS=", process.env.EMAIL_PASS);
 // Initialize Express app
 const app = express();
 

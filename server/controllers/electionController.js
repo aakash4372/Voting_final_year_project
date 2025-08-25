@@ -4,7 +4,8 @@ import Election from "../models/Election.js";
 export const createElection = async (req, res) => {
   try {
     const election = await Election.create({ ...req.body, created_by: req.user.id });
-    res.status(201).json(election);
+    const populatedElection = await election.populate("created_by", "name email");
+    res.status(201).json(populatedElection);
   } catch (error) {
     res.status(500).json({ message: "Error creating election", error: error.message });
   }
@@ -34,7 +35,15 @@ export const getElectionById = async (req, res) => {
 // Update
 export const updateElection = async (req, res) => {
   try {
-    const election = await Election.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // 🚫 Prevent overriding created_by
+    const { created_by, ...updateData } = req.body;
+
+    const election = await Election.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).populate("created_by", "name email");
+
     if (!election) return res.status(404).json({ message: "Election not found" });
     res.json(election);
   } catch (error) {

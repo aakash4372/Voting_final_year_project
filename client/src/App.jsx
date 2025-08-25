@@ -11,6 +11,7 @@ import { adminRoutes } from '@/routes/AdminRoutes';
 import { voterRoutes } from '@/routes/VoterRoutes';
 import Page from './Modules/Pages/main-dashboard/page';
 import Register from './Modules/Auth/Register';
+import VerifyEmail from './Modules/Auth/VerifyEmail';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<PrivateRoute allowedRole="public"><LoginPage /></PrivateRoute>} />
         <Route path="/register" element={<PrivateRoute allowedRole="public"><Register /></PrivateRoute>} />
+        <Route path="/verify-email" element={<PrivateRoute allowedRole="public"><VerifyEmail /></PrivateRoute>} />
         <Route path="/login" element={<PrivateRoute allowedRole="public"><LoginPage /></PrivateRoute>} />
         <Route path="/forgot-password" element={<PrivateRoute allowedRole="public"><ForgotPassword /></PrivateRoute>} />
         <Route path="/verify-otp" element={<PrivateRoute allowedRole="public"><VerifyOTP /></PrivateRoute>} />
