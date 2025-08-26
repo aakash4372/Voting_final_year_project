@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import loginImage from "@/assets/img/politico.png";
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { MdEmail, MdPhone, MdLock } from "react-icons/md";
+import { Loader2, Mail, Lock } from "lucide-react";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -32,122 +29,79 @@ const Login = () => {
   };
 
   return (
-    <div className="flex bg-[#aec4ee] min-h-screen flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl">
-        <Card className="overflow-hidden p-0 bg-white shadow-lg rounded-xl">
-          <CardContent className="grid p-0 md:grid-cols-2">
-            {/* ===== Form Section ===== */}
-            <form
-              className="p-6 md:p-8 flex flex-col justify-center"
-              onSubmit={handleSubmit}
-            >
-              <div className="flex flex-col gap-6">
-                {/* Heading */}
-                <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">Welcome back</h1>
-                  <p className="text-muted-foreground text-balance">
-                    Login to Smart Voting System
-                  </p>
-                </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#4c35ae] p-4 sm:p-6 md:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 transform transition-all hover:shadow-2xl">
+        {/* Heading */}
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-600">
+          Welcome Back
+        </h2>
 
-                {/* Email or Phone */}
-                <div className="grid gap-3 relative">
-                  <Label htmlFor="emailOrPhone">Email or Phone</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2b2c2d]">
-                      {emailOrPhone.includes("@") ? (
-                        <MdEmail size={20} />
-                      ) : (
-                        <MdPhone size={20} />
-                      )}
-                    </span>
-                    <Input
-                      id="emailOrPhone"
-                      type="text"
-                      placeholder="Enter email or phone"
-                      value={emailOrPhone}
-                      onChange={(e) => setEmailOrPhone(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="grid gap-3">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                      to="/forgot-password"
-                      className="ml-auto text-sm underline-offset-2 hover:underline"
-                    >
-                      Forgot your password?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2b2c2d]">
-                      <MdLock size={20} />
-                    </span>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter Your Password"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    "Login"
-                  )}
-                </Button>
-
-                {/* Register Link */}
-                <div className="text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Don't have an account?{" "}
-                    <Link
-                      to="/register"
-                      className="underline-offset-2 hover:underline text-primary"
-                    >
-                      Register
-                    </Link>
-                  </p>
-                </div>
-              </div>
-            </form>
-
-            {/* ===== Right Side Image ===== */}
-            <div className="bg-muted relative hidden md:block">
-              <img
-                src={loginImage}
-                alt="Login Background"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email or Phone */}
+          <div>
+            <Label className="text-sm font-medium text-gray-700">
+              Email or Phone
+            </Label>
+            <div className="relative mt-1">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+                required
+                placeholder="Enter your email or phone"
+                className="pl-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg transition-colors duration-200"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Footer Terms */}
-        <div className="text-[#3b3b3b] text-center text-xs mt-4">
-          By clicking continue, you agree to our{" "}
-          <a href="#" className="underline underline-offset-4 hover:text-primary">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="underline underline-offset-4 hover:text-primary">
-            Privacy Policy
-          </a>.
+          {/* Password */}
+          <div>
+            <Label className="text-sm font-medium text-gray-700">
+              Password
+            </Label>
+            <div className="relative mt-1">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Enter your password"
+                className="pl-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg transition-colors duration-200"
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
+          </Button>
+        </form>
+
+        {/* Register Link */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Don’t have an account?{" "}
+            <Link
+              to="/register"
+              className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+            >
+              Register
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -1,47 +1,104 @@
-// src/Modules/Auth/VerifyEmail.jsx
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { showToast } from "@/toast/customToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2, Key } from "lucide-react";
 
 const VerifyEmail = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
   const email = state?.email || "";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const res = await axiosInstance.post("/auth/verify-email", { email, otp });
       showToast("success", res.data.message);
       navigate("/login");
     } catch (err) {
       showToast("error", err.response?.data?.message || "OTP verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      const res = await axiosInstance.post("/auth/resend-otp", { email });
+      showToast("success", res.data.message);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || "Failed to resend OTP");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Verify Email</h2>
-        <p className="mb-4 text-center">Enter the OTP sent to {email}</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#4c35ae] p-4 sm:p-6 md:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 transform transition-all hover:shadow-2xl">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-600">
+          Verify Your Email
+        </h2>
+        <p className="mb-6 text-center text-gray-600">
+          Enter the OTP sent to {email}
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label>OTP</Label>
-            <Input
-              name="otp"
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-            />
+            <Label className="text-sm font-medium text-gray-700">OTP</Label>
+            <div className="relative mt-1">
+              <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                name="otp"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                placeholder="Enter your OTP"
+                className="pl-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg transition-colors duration-200"
+              />
+            </div>
           </div>
-          <Button type="submit" className="w-full">Verify OTP</Button>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              "Verify OTP"
+            )}
+          </Button>
         </form>
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Didn't receive the OTP?{" "}
+            <button
+              onClick={handleResendOTP}
+              className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+              disabled={loading}
+            >
+              Resend OTP
+            </button>
+          </p>
+          <p className="text-sm mt-2 text-gray-600">
+            Back to{" "}
+            <Link
+              to="/login"
+              className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

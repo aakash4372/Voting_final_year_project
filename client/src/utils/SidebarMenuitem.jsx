@@ -13,6 +13,7 @@ export const sidebarMenuItems = {
   ],
   voter: [
     { url: "/voter_dashboard", title: "Dashboard", icon: RiDashboardLine },
+    { url: "/voter_dashboard/candidates", title: "Candidates", icon: FaUserTie },
   ],
 };
 

@@ -1,7 +1,19 @@
+// src/controllers/authController.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Department from "../models/Department.js";
+import { sendOTPEmail } from "../utils/nodemailer.js";
+
+// Generate OTP
+const generateOTP = () => {
+  const characters = process.env.OTP_CHARACTERS || "0123456789";
+  let otp = "";
+  for (let i = 0; i < 6; i++) {
+    otp += characters[Math.floor(Math.random() * characters.length)];
+  }
+  return otp;
+};
 
 // Public: Register
 export const register = async (req, res) => {
@@ -17,7 +29,14 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "User with this email already exists" });
     }
 
+    const deptExists = await Department.findById(department);
+    if (!deptExists) {
+      return res.status(400).json({ message: "Invalid department" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
 
     const newUser = new User({
       name,
@@ -25,17 +44,94 @@ export const register = async (req, res) => {
       password: hashedPassword,
       phone,
       department,
-      isEmailVerified: true, // Automatically verified
+      emailVerificationOTP: otp,
+      emailVerificationExpires: otpExpires,
+      isEmailVerified: false, // Not verified until OTP is confirmed
     });
 
     await newUser.save();
 
-    res.status(201).json({ message: "Registration successful" });
+    // Send OTP email
+    await sendOTPEmail(email, otp);
+
+    res.status(201).json({
+      message: "Please check your email for OTP verification.",
+      email, // Pass email to frontend for OTP verification
+    });
   } catch (error) {
     console.error("Register Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Public: Verify Email OTP
+export const verifyEmail = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    if (user.emailVerificationOTP !== otp || user.emailVerificationExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationOTP = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Verify Email Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+// src/controllers/authController.js
+export const resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
+
+    user.emailVerificationOTP = otp;
+    user.emailVerificationExpires = otpExpires;
+    await user.save();
+
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({ message: "New OTP sent to your email" });
+  } catch (error) {
+    console.error("Resend OTP Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 
 // Public: Login
 export const login = async (req, res) => {
