@@ -1,3 +1,4 @@
+// src/controllers/candidateController.js
 import Candidate from "../models/Candidate.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
@@ -27,7 +28,7 @@ export const createCandidate = async (req, res) => {
       name,
       image_url: imageUrl,
       election: new mongoose.Types.ObjectId(election),
-      created_by: req.user.id,
+      created_by: req.user._id,
     });
 
     res.status(201).json(candidate);
@@ -48,7 +49,13 @@ export const updateCandidate = async (req, res) => {
       return res.status(400).json({ message: "Invalid candidate ID." });
     }
 
-    const updateFields = { name, election: new mongoose.Types.ObjectId(election) };
+    const updateFields = { name };
+    if (election) {
+      if (!mongoose.Types.ObjectId.isValid(election)) {
+        return res.status(400).json({ message: "Invalid election ID." });
+      }
+      updateFields.election = new mongoose.Types.ObjectId(election);
+    }
 
     if (req.file) {
       imageUrl = req.file.path;
@@ -77,9 +84,21 @@ export const updateCandidate = async (req, res) => {
 // Get all candidates
 export const getCandidates = async (req, res) => {
   try {
-    const candidates = await Candidate.find()
-      .populate("created_by", "name email") // Select specific fields
+    const { election } = req.query;
+
+    // Build query object
+    const query = {};
+    if (election) {
+      if (!mongoose.Types.ObjectId.isValid(election)) {
+        return res.status(400).json({ message: "Invalid election ID" });
+      }
+      query.election = new mongoose.Types.ObjectId(election);
+    }
+
+    const candidates = await Candidate.find(query)
+      .populate("created_by", "name email")
       .populate("election", "title");
+
     res.json(candidates);
   } catch (error) {
     console.error("Error fetching candidates:", error);

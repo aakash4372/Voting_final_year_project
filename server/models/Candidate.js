@@ -1,3 +1,4 @@
+// src/models/Candidate.js
 import mongoose from "mongoose";
 
 const candidateSchema = new mongoose.Schema(
@@ -9,13 +10,18 @@ const candidateSchema = new mongoose.Schema(
       ref: "Election",
       required: true,
     },
-    created_by: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User", 
-      required: true 
+    created_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
+    votes: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
+// Create indexes
+candidateSchema.index({ election: 1 });
+candidateSchema.index({ name: 1 });
 
 export default mongoose.model("Candidate", candidateSchema);
