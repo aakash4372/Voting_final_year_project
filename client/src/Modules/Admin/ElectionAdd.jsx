@@ -61,7 +61,7 @@ const ElectionManager = () => {
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2; // Fixed value, no user selection
+  const itemsPerPage = 10; // Fixed value, no user selection
   const totalPages = Math.ceil(elections.length / itemsPerPage);
   const paginatedElections = elections.slice(
     (currentPage - 1) * itemsPerPage,
