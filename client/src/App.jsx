@@ -22,9 +22,9 @@ function App() {
         <Route path="/register" element={<PrivateRoute allowedRole="public"><Register /></PrivateRoute>} />
         <Route path="/verify-email" element={<PrivateRoute allowedRole="public"><VerifyEmail /></PrivateRoute>} />
         <Route path="/login" element={<PrivateRoute allowedRole="public"><LoginPage /></PrivateRoute>} />
-        {/* <Route path="/forgot-password" element={<PrivateRoute allowedRole="public"><ForgotPassword /></PrivateRoute>} /> */}
-        {/* <Route path="/verify-otp" element={<PrivateRoute allowedRole="public"><VerifyOTP /></PrivateRoute>} /> */}
-        {/* <Route path="/reset-password" element={<PrivateRoute allowedRole="public"><ResetPassword /></PrivateRoute>} /> */}
+        <Route path="/forgot-password" element={<PrivateRoute allowedRole="public"><ForgotPassword /></PrivateRoute>} />
+        <Route path="/verify-otp" element={<PrivateRoute allowedRole="public"><VerifyOTP /></PrivateRoute>} />
+        <Route path="/reset-password" element={<PrivateRoute allowedRole="public"><ResetPassword /></PrivateRoute>} />
         {/* Protected Routes with Sidebar Layout */}
         <Route element={<Page />}>
           {adminRoutes.map((route) => (

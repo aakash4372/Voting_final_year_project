@@ -68,7 +68,7 @@ export function SiteHeader() {
         <Breadcrumb>
           <BreadcrumbList>
             {breadcrumbs.map((crumb, index) => (
-              <BreadcrumbItem key={crumb.url || crumb.title}>
+              <BreadcrumbItem className="text-black" key={crumb.url || crumb.title}>
                 {crumb.url ? (
                   <BreadcrumbLink asChild>
                     <Link to={crumb.url}>{crumb.title}</Link>

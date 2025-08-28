@@ -26,7 +26,7 @@ import {
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
-  const { logout } = useContext(AuthContext);
+  const { logout, user: authUser } = useContext(AuthContext); // Access user from AuthContext
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -38,8 +38,18 @@ export function NavUser({ user }) {
     }
   };
 
-  const goToAccount = () => navigate("/admin_dashboard/profile"); // Account route
   const goToNotifications = () => navigate("/"); // Notifications route
+
+  const goToProfile = () => {
+    // Check user's role and navigate to the appropriate profile page
+    if (authUser?.role === "admin") {
+      navigate("/admin_dashboard/profile");
+    } else if (authUser?.role === "voter") {
+      navigate("/voter_dashboard/profile");
+    } else {
+      navigate("/login"); // Fallback if no role is found
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -53,7 +63,7 @@ export function NavUser({ user }) {
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg bg-[#9893b0] text-[#ffffff]">
-                  {user?.name ? user.name.slice(0,2).toUpperCase():'??' }
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : "??"}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -98,17 +108,10 @@ export function NavUser({ user }) {
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className="hover:bg-[#9893b0] hover:text-[#000000]"
-                onClick={goToAccount}
+                onClick={goToProfile} // Call goToProfile on click
               >
                 <IconUserCircle className="text-[#000000] dark:text-[#e0f7fa]" />
                 Account
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="hover:bg-[#9893b0] hover:text-[#000000]"
-                onClick={goToNotifications}
-              >
-                <IconNotification className="text-[#000000] dark:text-[#e0f7fa]" />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
 

@@ -11,31 +11,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axiosInstance.get("/auth/user-info", {
-          withCredentials: true,
-        });
-        if (response.data.user) {
-          setUser(response.data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
+ // src/context/AuthContext.jsx
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/user-info", {
+        withCredentials: true,
+      });
+      if (response.data.user) {
+        setUser(response.data.user);
+      } else {
         setUser(null);
-        if (
-          error.response?.status === 401 &&
-          error.response?.data?.message !== "No token provided"
-        ) {
-          showToast("error", error.response?.data?.message || "Session expired");
-        }
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchUser();
-  }, []);
+    } catch (error) {
+      setUser(null);
+      if (
+        error.response?.status === 401 &&
+        error.response?.data?.message !== "No token provided"
+      ) {
+        console.log("AuthContext error:", error.response?.data?.message);
+        // Ensure no showToast with "succfuly profule update"
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchUser();
+}, []);
 
   // 🔹 Register function
   const register = async (formData) => {

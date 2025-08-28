@@ -1,5 +1,6 @@
 // src/routes/VoterRoutes.js
 import PrivateRoute from '@/context/PrivateRoute';
+import Profile from '@/Modules/Auth/Profile';
 import VoterDashboard from '@/Modules/Voters/Dashbaord';
 import VoterCandidates from '@/Modules/Voters/VoterCandidates';
 // Assume this component exists
@@ -21,12 +22,12 @@ export const voterRoutes = [
       </PrivateRoute>
     ),
   },
-//   {
-//     path: '/voter_dashboard/Profile',
-//     element: (
-//       <PrivateRoute allowedRole="voter">
-//         <Profile />
-//       </PrivateRoute>
-//     ),
-//   },
+  {
+    path: '/voter_dashboard/profile',
+    element: (
+      <PrivateRoute allowedRole="voter">
+        <Profile />
+      </PrivateRoute>
+    ),
+  },
 ];

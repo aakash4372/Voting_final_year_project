@@ -22,6 +22,7 @@ const VoterCandidates = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Load selected election from local storage on mount
   useEffect(() => {
     if (!user) {
       showToast("error", "Please log in to view elections.");
@@ -29,14 +30,29 @@ const VoterCandidates = () => {
       return;
     }
 
+    console.log("User ID:", user._id); // Debug user ID (use _id, not id)
+
     const fetchElections = async () => {
       try {
         const response = await axiosInstance.get("/elections?status=ongoing");
+        console.log("Elections fetched:", response.data); // Debug elections
         setElections(response.data);
         if (response.data.length === 0) {
           showToast("info", "No ongoing elections found.");
+        } else {
+          // Check for previously selected election in local storage
+          const savedElectionId = localStorage.getItem("selectedElectionId");
+          if (savedElectionId) {
+            const savedElection = response.data.find(
+              (election) => election._id === savedElectionId
+            );
+            if (savedElection) {
+              setSelectedElection(savedElection);
+            }
+          }
         }
       } catch (error) {
+        console.error("Fetch elections error:", error.response?.data || error);
         showToast("error", error.response?.data?.message || "Failed to fetch elections.");
       } finally {
         setLoading(false);
@@ -45,15 +61,31 @@ const VoterCandidates = () => {
     fetchElections();
   }, [user, navigate]);
 
+  // Check vote status and fetch candidates when selectedElection changes
+  useEffect(() => {
+    if (selectedElection) {
+      console.log("Selected Election ID:", selectedElection._id); // Debug selected election
+      localStorage.setItem("selectedElectionId", selectedElection._id);
+      checkIfVoted(selectedElection._id);
+      fetchCandidates(selectedElection._id);
+    } else {
+      setCandidates([]); // Clear candidates if no election is selected
+      setHasVoted(false); // Reset vote status
+    }
+  }, [selectedElection]);
+
   const fetchCandidates = async (electionId) => {
     try {
       setCandidatesLoading(true);
-      const response = await axiosInstance.get(`/candidates?election=${electionId}`);
+      setCandidates([]); // Clear previous candidates to avoid showing wrong ones
+      const response = await axiosInstance.get(`/candidates?electionId=${electionId}`);
+      console.log("Candidates fetched:", response.data); // Debug candidates
       setCandidates(response.data);
       if (response.data.length === 0) {
         showToast("info", "No candidates found for this election.");
       }
     } catch (error) {
+      console.error("Fetch candidates error:", error.response?.data || error);
       if (error.response?.status === 401) {
         showToast("error", "Session expired. Please log in again.");
         navigate("/login");
@@ -69,9 +101,16 @@ const VoterCandidates = () => {
   const checkIfVoted = async (electionId) => {
     try {
       const response = await axiosInstance.get(`/votes/${electionId}`);
-      const userVote = response.data.find((vote) => vote.voter.toString() === user.id);
+      console.log("Votes response:", response.data); // Debug votes response
+      const userVote = response.data.find((vote) => {
+        const matches = vote.voter.toString() === user._id;
+        console.log(`Comparing vote.voter: ${vote.voter.toString()} with user._id: ${user._id} -> ${matches}`);
+        return matches;
+      });
       setHasVoted(!!userVote);
+      console.log("Has voted:", !!userVote); // Debug hasVoted state
     } catch (error) {
+      console.error("Check vote status error:", error.response?.data || error);
       setHasVoted(false);
       if (error.response?.status === 401) {
         showToast("error", "Session expired. Please log in again.");
@@ -83,10 +122,11 @@ const VoterCandidates = () => {
   };
 
   const handleElectionClick = (election) => {
+    if (hasVoted) {
+      showToast("warning", "You have already voted in this election.");
+      return;
+    }
     setSelectedElection(election);
-    setCandidates([]); // Clear candidates when selecting a new election
-    fetchCandidates(election._id);
-    checkIfVoted(election._id);
   };
 
   const handleVote = async (candidateId, candidateName) => {
@@ -101,7 +141,9 @@ const VoterCandidates = () => {
       });
       showToast("success", `Vote cast successfully for ${candidateName}!`);
       setHasVoted(true);
+      checkIfVoted(selectedElection._id); // Re-check vote status
     } catch (error) {
+      console.error("Vote error:", error.response?.data || error);
       if (error.response?.status === 401) {
         showToast("error", "Session expired. Please log in again.");
         navigate("/login");
@@ -140,7 +182,7 @@ const VoterCandidates = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && !hasVoted && handleElectionClick(election)}
             >
-              {hasVoted && (
+              {hasVoted && selectedElection?._id === election._id && (
                 <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center">
                   <FaCheckCircle className="h-4 w-4 mr-1" />
                   Voted
@@ -188,6 +230,7 @@ const VoterCandidates = () => {
                         src={candidate.image_url}
                         alt={candidate.name}
                         className="w-full h-48 object-cover rounded-lg mb-3"
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
                       />
                       <CardTitle className="text-lg font-semibold text-gray-800">
                         {candidate.name}

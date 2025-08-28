@@ -1,11 +1,9 @@
+// src/components/VerifyOTP.jsx
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import loginImage from "@/assets/img/politico.png";
-import logo from "@/assets/img/Bmlogo.png";
 import { useState } from "react";
-import { Key } from "lucide-react";
+import { Key, Loader2 } from "lucide-react"; // Added Loader2 to the import
 import axiosInstance from "@/lib/axios";
 import { showToast } from "@/toast/customToast";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -33,59 +31,63 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="flex bg-[#aec4ee] min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl">
-        <Card className="overflow-hidden p-0 bg-white shadow-lg rounded-xl">
-          <CardContent className="grid p-0 md:grid-cols-2">
-            <form
-              className="p-6 md:p-8 flex flex-col justify-center"
-              onSubmit={handleSubmit}
-            >
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">Verify OTP</h1>
-                  <p className="text-muted-foreground text-balance">
-                    Enter the OTP sent to {email}
-                  </p>
-                </div>
-                <div className="grid gap-3 relative">
-                  <Label htmlFor="otp">OTP</Label>
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={18}
-                    />
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="Enter 6-digit OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Verifying..." : "Verify OTP"}
-                </Button>
-              </div>
-            </form>
-            <div className="bg-muted relative hidden md:block">
-              <img
-                src={loginImage}
-                alt="Login Background"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+    <div className="min-h-screen flex items-center justify-center bg-[#4c35ae] p-4 sm:p-6 md:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 transform transition-all hover:shadow-2xl">
+        {/* Heading */}
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-600">
+          Verify OTP
+        </h2>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label className="text-sm font-medium text-gray-700">OTP</Label>
+            <div className="relative mt-1">
+              <Key
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                size={18}
+              />
+              <Input
+                type="text"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="pl-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg transition-colors duration-200"
+                required
               />
             </div>
-          </CardContent>
-        </Card>
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <span className="text-[#3b3b3b]">build by</span>
-          <img src={logo} alt="Logo" className="h-8 object-contain" />
-        </div>
-        <div className="text-[#3b3b3b] hover:text-primary text-center text-xs mt-4 underline underline-offset-4">
-          <Link to="/login">Back to Login</Link>
+            <p className="text-sm text-gray-600 mt-2 text-center">
+              Enter the OTP sent to {email}
+            </p>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              "Verify OTP"
+            )}
+          </Button>
+        </form>
+
+        {/* Links */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Back to{" "}
+            <Link
+              to="/login"
+              className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+            >
+              Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import Dashboard from '@/Modules/Admin/Dashboard';
 import Department from '@/Modules/Admin/Departments';
 import ElectionAdd from '@/Modules/Admin/ElectionAdd';
 import ElectionList from '@/Modules/Admin/ElectionList';
+import Winnercandidate from '@/Modules/Admin/Winnercandidate';
 import Profile from '@/Modules/Auth/Profile';
 
 export const adminRoutes = [
@@ -24,14 +25,14 @@ export const adminRoutes = [
       </PrivateRoute>
     ),
   },
-  {
-    path: '/admin_dashboard/electionlist',
-    element: (
-      <PrivateRoute allowedRole="admin">
-       <ElectionList/>
-      </PrivateRoute>
-    ),
-  },
+  // {
+  //   path: '/admin_dashboard/electionlist',
+  //   element: (
+  //     <PrivateRoute allowedRole="admin">
+  //      <ElectionList/>
+  //     </PrivateRoute>
+  //   ),
+  // },
   {
     path: '/admin_dashboard/candidates',
     element: (
@@ -54,6 +55,15 @@ export const adminRoutes = [
     element: (
       <PrivateRoute allowedRole="admin">
        <Department/>
+      </PrivateRoute>
+    ),
+
+  },
+  {
+    path:'/admin_dashboard/winnercandidate',
+    element: (
+      <PrivateRoute allowedRole="admin">
+       <Winnercandidate/>
       </PrivateRoute>
     ),
 

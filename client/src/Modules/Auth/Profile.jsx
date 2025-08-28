@@ -1,56 +1,69 @@
-import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FaEnvelope, FaPhone, FaBuilding, FaCalendarAlt, FaPen } from "react-icons/fa";
+// src/components/Profile.jsx
+import React, { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { FaEnvelope, FaPhone } from "react-icons/fa";
+import Profileimg from "@/assets/profile.png";
 
 const Profile = () => {
-  const user = {
-    avatar: "https://i.pravatar.cc/150?img=3",
-    name: "Aakash M",
-    email: "aakash@example.com",
-    phone: "+91 9876543210",
-    department: "BCA",
-    year: "2nd Year",
-  };
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <div className="text-center p-6">Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center p-6">
+        No user data available. Please log in.
+      </div>
+    );
+  }
 
   return (
-    <div className="flex p-8 bg-gray-100 justify-start items-start">
-      <Card className="w-96 shadow-lg relative">
-        {/* Edit Icon Top Right */}
-        <FaPen
-          className="absolute top-4 right-4 text-gray-500 hover:text-indigo-500 cursor-pointer"
-          size={14}
-          title="Edit Profile"
-          onClick={() => alert("Edit Profile clicked!")}
-        />
-
-        <CardHeader className="flex items-center gap-4">
-          <Avatar className="w-20 h-20">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>CN</AvatarFallback>
+    <div className="flex justify-center items-start p-4 sm:p-6 md:p-8">
+      <Card className="w-full max-w-lg shadow-lg">
+        {/* Header section */}
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <Avatar className="w-20 h-20 mx-auto sm:mx-0">
+            <AvatarImage src={Profileimg} alt={user.name} />
+            <AvatarFallback>
+              {user.name ? user.name.charAt(0).toUpperCase() : "CN"}
+            </AvatarFallback>
           </Avatar>
-          <div>
-            <CardTitle className="text-lg">{user.name}</CardTitle>
-            <CardDescription>{user.department}</CardDescription>
+          <div className="text-center sm:text-left">
+            <CardTitle className="text-lg sm:text-xl font-semibold">
+              {user.name}
+            </CardTitle>
+            <CardDescription className="text-sm sm:text-base">
+              {user.department?.name || "No Department"}{" "}
+              <span className="ml-1">
+                {user.department?.year || "Not provided"}
+              </span>
+            </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3 mt-4">
-          <div className="flex items-center text-gray-700">
-            <FaEnvelope className="mr-3 text-indigo-500" />
-            <span>{user.email}</span>
+        {/* Content section */}
+        <CardContent className="space-y-4 mt-2">
+          <div className="flex items-center text-gray-700 text-sm sm:text-base">
+            <FaEnvelope className="mr-3 text-indigo-500 flex-shrink-0" />
+            <span className="break-all">{user.email || "Not provided"}</span>
           </div>
-          <div className="flex items-center text-gray-700">
-            <FaPhone className="mr-3 text-indigo-500" />
-            <span>{user.phone}</span>
-          </div>
-          <div className="flex items-center text-gray-700">
-            <FaBuilding className="mr-3 text-indigo-500" />
-            <span>{user.department}</span>
-          </div>
-          <div className="flex items-center text-gray-700">
-            <FaCalendarAlt className="mr-3 text-indigo-500" />
-            <span>{user.year}</span>
+          <div className="flex items-center text-gray-700 text-sm sm:text-base">
+            <FaPhone className="mr-3 text-indigo-500 flex-shrink-0" />
+            <span>{user.phone || "Not provided"}</span>
           </div>
         </CardContent>
       </Card>

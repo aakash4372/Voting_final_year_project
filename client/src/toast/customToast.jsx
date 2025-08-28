@@ -2,6 +2,10 @@
 import { toast } from "react-toastify";
 
 export const showToast = (type = "info", message = "", options = {}) => {
+  // Log caller and stack trace for debugging
+  console.log("showToast called:", { type, message, options });
+  console.trace("Toast call stack");
+
   const toastOptions = {
     position: "top-right",
     autoClose: 3000,
@@ -12,6 +16,7 @@ export const showToast = (type = "info", message = "", options = {}) => {
     ...options,
   };
 
+  toast.dismiss(); // Clear previous toasts
   switch (type) {
     case "success":
       toast.success(message, toastOptions);

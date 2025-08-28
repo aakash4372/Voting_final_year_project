@@ -1,4 +1,3 @@
-// src/controllers/voteController.js
 import Vote from "../models/Vote.js";
 import Candidate from "../models/Candidate.js";
 import User from "../models/User.js";
@@ -9,14 +8,12 @@ export const castVote = async (req, res) => {
   try {
     const { election, candidate } = req.body;
 
-    // Check if req.user is defined
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized: User not authenticated" });
     }
 
     const voter = req.user._id;
 
-    // Validate ObjectIDs
     if (!mongoose.Types.ObjectId.isValid(election) || !mongoose.Types.ObjectId.isValid(candidate)) {
       return res.status(400).json({ message: "Invalid election or candidate ID" });
     }
@@ -44,8 +41,12 @@ export const castVote = async (req, res) => {
       department: user.department,
     });
 
-    // Update the candidate's vote count
-    await Candidate.findByIdAndUpdate(candidate, { $inc: { votes: 1 } });
+    // Update candidate: increment votes
+    await Candidate.findByIdAndUpdate(
+      candidate,
+      { $inc: { votes: 1 } }, // Increment votes field
+      { new: true }
+    );
 
     res.status(201).json({ message: "Vote cast successfully", vote });
   } catch (error) {
@@ -58,7 +59,7 @@ export const castVote = async (req, res) => {
 export const getVotes = async (req, res) => {
   try {
     const votes = await Vote.find({ election: req.params.electionId })
-      .populate("voter", "name email") // Changed "user" to "voter" to match schema
+      .populate("voter", "name email")
       .populate("candidate", "name");
     res.json(votes);
   } catch (error) {

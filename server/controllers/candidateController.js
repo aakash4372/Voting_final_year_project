@@ -1,18 +1,11 @@
-// src/controllers/candidateController.js
 import Candidate from "../models/Candidate.js";
-import User from "../models/User.js";
 import mongoose from "mongoose";
-
-// Ensure MongoDB indexes for faster queries
-Candidate.collection.createIndex({ election: 1 });
-Candidate.collection.createIndex({ name: 1 });
 
 // Add candidate
 export const createCandidate = async (req, res) => {
   try {
     const { name, election } = req.body;
 
-    // Input validation
     if (!name || !election || !req.file) {
       return res.status(400).json({ message: "Name, election, and image are required." });
     }
@@ -23,7 +16,6 @@ export const createCandidate = async (req, res) => {
 
     const imageUrl = req.file.path;
 
-    // Create the candidate entry
     const candidate = await Candidate.create({
       name,
       image_url: imageUrl,
@@ -31,7 +23,12 @@ export const createCandidate = async (req, res) => {
       created_by: req.user._id,
     });
 
-    res.status(201).json(candidate);
+    // Fetch the created candidate with populated fields
+    const populatedCandidate = await Candidate.findById(candidate._id)
+      .populate("election", "title")
+      .populate("created_by", "name email");
+
+    res.status(201).json(populatedCandidate);
   } catch (error) {
     console.error("Error creating candidate:", error);
     res.status(500).json({ message: "Error creating candidate", error: error.message });
@@ -84,21 +81,11 @@ export const updateCandidate = async (req, res) => {
 // Get all candidates
 export const getCandidates = async (req, res) => {
   try {
-    const { election } = req.query;
-
-    // Build query object
-    const query = {};
-    if (election) {
-      if (!mongoose.Types.ObjectId.isValid(election)) {
-        return res.status(400).json({ message: "Invalid election ID" });
-      }
-      query.election = new mongoose.Types.ObjectId(election);
-    }
-
-    const candidates = await Candidate.find(query)
+    const { electionId } = req.query;
+    const filter = electionId ? { election: new mongoose.Types.ObjectId(electionId) } : {};
+    const candidates = await Candidate.find(filter)
       .populate("created_by", "name email")
       .populate("election", "title");
-
     res.json(candidates);
   } catch (error) {
     console.error("Error fetching candidates:", error);

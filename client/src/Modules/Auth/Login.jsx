@@ -1,10 +1,11 @@
+// src/components/Login.jsx
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { Loader2, Mail, Lock } from "lucide-react";
+import {  Loader2, Mail, Lock } from "lucide-react";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -82,7 +83,8 @@ const Login = () => {
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+
                 Logging in...
               </>
             ) : (
@@ -91,8 +93,8 @@ const Login = () => {
           </Button>
         </form>
 
-        {/* Register Link */}
-        <div className="text-center mt-6">
+        {/* Links */}
+        <div className="text-center mt-6 space-y-2">
           <p className="text-sm text-gray-600">
             Don’t have an account?{" "}
             <Link
@@ -100,6 +102,15 @@ const Login = () => {
               className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
             >
               Register
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Forgot your password?{" "}
+            <Link
+              to="/forgot-password"
+ className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+            >
+              Reset Password
             </Link>
           </p>
         </div>

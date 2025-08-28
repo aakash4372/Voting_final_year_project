@@ -46,56 +46,67 @@ const Candidate = () => {
   const [editingCandidate, setEditingCandidate] = useState(null);
 
   useEffect(() => {
-    fetchCandidates();
     fetchElections();
+    fetchCandidates();
   }, []);
-
-  const fetchCandidates = async () => {
-    try {
-      if (cache.has("candidates")) {
-        setCandidatesByElection(cache.get("candidates"));
-        return;
-      }
-
-      const response = await axiosInstance.get("/candidates");
-      const candidates = response.data;
-
-      const grouped = candidates.reduce((acc, candidate) => {
-        const electionId = candidate.election?._id;
-        if (electionId) {
-          if (!acc[electionId]) {
-            acc[electionId] = {
-              title: candidate.election.title,
-              candidates: [],
-            };
-          }
-          acc[electionId].candidates.push(candidate);
-        }
-        return acc;
-      }, {});
-
-      cache.set("candidates", grouped);
-      setCandidatesByElection(grouped);
-    } catch (error) {
-      console.error("Error fetching candidates:", error);
-      showToast("error", error.response?.data?.message || "Failed to fetch candidates.");
-    }
-  };
 
   const fetchElections = async () => {
     try {
+      setIsLoading(true);
       if (cache.has("elections")) {
+        console.log("Using cached elections");
         setElections(cache.get("elections"));
         return;
       }
 
       const response = await axiosInstance.get("/elections");
-      const electionsData = response.data;
-      cache.set("elections", electionsData);
-      setElections(electionsData);
+      console.log("Elections fetched:", response.data);
+      cache.set("elections", response.data);
+      setElections(response.data);
     } catch (error) {
-      console.error("Error fetching elections:", error);
+      console.error("Error fetching elections:", error.response?.data || error);
+      cache.delete("elections");
       showToast("error", error.response?.data?.message || "Failed to fetch elections.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchCandidates = async () => {
+    try {
+      setIsLoading(true);
+      if (cache.has("candidates")) {
+        console.log("Using cached candidates");
+        setCandidatesByElection(cache.get("candidates"));
+        return;
+      }
+
+      const response = await axiosInstance.get("/candidates");
+      console.log("Candidates fetched:", response.data);
+      const candidates = response.data;
+
+      const grouped = candidates.reduce((acc, candidate) => {
+        const electionId = candidate.election?._id || "unknown";
+        const electionTitle = candidate.election?.title || "Unknown Election";
+        if (!acc[electionId]) {
+          acc[electionId] = {
+            title: electionTitle,
+            candidates: [],
+          };
+        }
+        acc[electionId].candidates.push(candidate);
+        return acc;
+      }, {});
+
+      console.log("Grouped candidates:", grouped);
+      cache.set("candidates", grouped);
+      setCandidatesByElection(grouped);
+    } catch (error) {
+      console.error("Error fetching candidates:", error.response?.data || error);
+      cache.delete("candidates");
+      showToast("error", error.response?.data?.message || "Failed to fetch candidates.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -148,28 +159,24 @@ const Candidate = () => {
     try {
       if (isEditing) {
         await axiosInstance.put(`/candidates/${editingCandidate._id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         showToast("success", "Candidate updated successfully!");
       } else {
         await axiosInstance.post("/candidates", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         showToast("success", "Candidate added successfully!");
       }
       cache.delete("candidates");
-      fetchCandidates();
+      await fetchCandidates();
       setIsModalOpen(false);
       setIsEditing(false);
       setNewCandidate({ name: "", electionId: "", image: null });
       setEditingCandidate(null);
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'adding'} candidate:`, error.response?.data);
-      showToast("error", error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'add'} candidate.`);
+      console.error(`Error ${isEditing ? "updating" : "adding"} candidate:`, error.response?.data);
+      showToast("error", error.response?.data?.message || `Failed to ${isEditing ? "update" : "add"} candidate.`);
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +188,7 @@ const Candidate = () => {
         await axiosInstance.delete(`/candidates/${candidateId}`);
         showToast("success", "Candidate deleted successfully!");
         cache.delete("candidates");
-        fetchCandidates();
+        await fetchCandidates();
       } catch (error) {
         console.error("Error deleting candidate:", error);
         showToast("error", error.response?.data?.message || "Failed to delete candidate.");
@@ -193,8 +200,8 @@ const Candidate = () => {
     setIsEditing(true);
     setEditingCandidate({
       ...candidate,
-      electionId: candidate.election._id,
-      image: null, // Reset image field
+      electionId: candidate.election?._id || "",
+      image: null,
     });
     setIsModalOpen(true);
   };
@@ -203,9 +210,7 @@ const Candidate = () => {
     return Object.keys(candidatesByElection).map((electionId) => (
       <div key={electionId} className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">
-            {candidatesByElection[electionId].title}
-          </h3>
+          <h3 className="text-xl font-semibold">{candidatesByElection[electionId].title}</h3>
           <span className="text-gray-500">
             ({candidatesByElection[electionId].candidates.length} candidates)
           </span>
@@ -214,7 +219,7 @@ const Candidate = () => {
           {candidatesByElection[electionId].candidates.map((candidate) => (
             <Card
               key={candidate._id}
-              className="rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition relative"
+              className="rounded-2xl border-1 border-gray-600 shadow-lg hover:shadow-xl hover:scale-105 transition relative"
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="absolute top-2 right-2">
@@ -234,15 +239,16 @@ const Candidate = () => {
               </DropdownMenu>
               <CardHeader className="flex flex-col items-center">
                 <img
-                  src={candidate.image_url || "https://via.placeholder.com/150"}
+                  src={candidate.image_url}
                   alt={candidate.name}
-                  className="w-24 h-24 rounded-full object-cover shadow-md"
+                  className="w-full h-48 object-cover shadow-md rounded-t-2xl"
+                  onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
                 />
-                <CardTitle className="mt-4 text-lg">{candidate.name}</CardTitle>
+                <CardTitle className="mt-4 text-lg text-center">{candidate.name || "Unknown Candidate"}</CardTitle>
               </CardHeader>
-              <CardContent className="text-center text-sm text-gray-600">
-                {candidate.election?.title}
-              </CardContent>
+              {/* <CardContent className="text-center text-sm text-gray-600">
+                {candidate.election?.title || "No Election"}
+              </CardContent> */}
             </Card>
           ))}
         </div>
@@ -251,9 +257,9 @@ const Candidate = () => {
   }, [candidatesByElection]);
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold"></h2>
+        <h2 className="text-2xl font-bold text-gray-800">Candidates</h2>
         <Dialog open={isModalOpen} onOpenChange={(open) => {
           setIsModalOpen(open);
           if (!open) {
@@ -263,72 +269,89 @@ const Candidate = () => {
           }
         }}>
           <DialogTrigger asChild>
-            <Button className="rounded-2xl shadow-md hover:scale-105 transition">
+            <Button className="rounded-2xl shadow-md hover:scale-105 transition bg-blue-600 hover:bg-blue-700 text-white">
               + Add Candidate
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{isEditing ? "Edit Candidate" : "Add New Candidate"}</DialogTitle>
-              <DialogDescription>
-                {isEditing ? "Update the candidate's details." : "Fill out the form below to add a new candidate."}
+          <DialogContent className="bg-white rounded-2xl shadow-2xl max-w-lg p-6 border border-gray-200">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-bold text-gray-900">
+                {isEditing ? "Edit Candidate" : "Add New Candidate"}
+              </DialogTitle>
+              <DialogDescription className="text-gray-600 text-sm">
+                {isEditing ? "Update the candidate's details below." : "Fill out the form to add a new candidate."}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Candidate Name</Label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700">Candidate Name</Label>
                 <Input
                   id="name"
                   name="name"
                   value={isEditing ? editingCandidate?.name || "" : newCandidate.name}
                   onChange={handleChange}
+                  className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
+                  placeholder="Enter candidate name"
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="election">Election</Label>
+              <div className="space-y-2">
+                <Label htmlFor="election" className="text-sm font-medium text-gray-700">Election</Label>
                 <Select
                   onValueChange={handleSelectChange}
-                  value={isEditing ? editingCandidate?.electionId : newCandidate.electionId}
+                  value={isEditing ? editingCandidate?.electionId || "" : newCandidate.electionId}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg">
                     <SelectValue placeholder="Select an Election" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-gray-200 rounded-lg shadow-lg">
                     {elections.map((election) => (
-                      <SelectItem key={election._id} value={election._id}>
+                      <SelectItem key={election._id} value={election._id} className="hover:bg-gray-100">
                         {election.title}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="image">Candidate Image</Label>
+              <div className="space-y-2">
+                <Label htmlFor="image" className="text-sm font-medium text-gray-700">Candidate Image</Label>
                 <Input
                   id="image"
                   name="image"
                   type="file"
                   accept="image/jpeg,image/jpg,image/png"
                   onChange={handleChange}
+                  className="border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
                   required={!isEditing}
                 />
                 {isEditing && (
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-xs text-gray-500 mt-1">
                     Leave blank to keep the existing image.
                   </p>
                 )}
               </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isLoading}>
+              <DialogFooter className="flex justify-end space-x-2 mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                  className="border-gray-300 text-gray-700 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition"
+                >
                   {isLoading ? (
                     <span className="flex items-center">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {isEditing ? "Updating..." : "Submitting..."}
                     </span>
                   ) : (
-                    isEditing ? "Update" : "Submit"
+                    isEditing ? "Update Candidate" : "Add Candidate"
                   )}
                 </Button>
               </DialogFooter>
@@ -337,7 +360,11 @@ const Candidate = () => {
         </Dialog>
       </div>
 
-      {Object.keys(candidatesByElection).length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : Object.keys(candidatesByElection).length === 0 ? (
         <p className="text-center text-gray-500">No candidates found.</p>
       ) : (
         renderedCandidates
@@ -346,4 +373,4 @@ const Candidate = () => {
   );
 };
 
-export default Candidate;
+export default Candidate; 

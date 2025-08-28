@@ -57,6 +57,7 @@ export const getUserById = async (req, res) => {
 };
 
 // Update
+// src/controllers/userController.js
 export const updateUser = async (req, res) => {
   try {
     const updateData = { ...req.body };
@@ -70,7 +71,7 @@ export const updateUser = async (req, res) => {
     }
     const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
+    res.json({ message: "User updated successfully", user }); // Ensure no typos here
   } catch (error) {
     res.status(500).json({ message: "Error updating user", error: error.message });
   }

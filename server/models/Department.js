@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const departmentSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  year: { type: Number, required: true },
+  year: { type: String, required: true },
   created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 }, { timestamps: true });
 

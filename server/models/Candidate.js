@@ -1,4 +1,3 @@
-// src/models/Candidate.js
 import mongoose from "mongoose";
 
 const candidateSchema = new mongoose.Schema(
@@ -15,12 +14,12 @@ const candidateSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    votes: { type: Number, default: 0 },
+    votes: { type: Number, default: 0 }, // Total votes for the election
   },
   { timestamps: true }
 );
 
-// Create indexes
+// Indexes for faster queries
 candidateSchema.index({ election: 1 });
 candidateSchema.index({ name: 1 });
 

@@ -153,7 +153,7 @@ const ElectionList = () => {
                         {format(new Date(election.end_date), 'PPP')}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(election.status)}>
+                        <Badge  variant={getStatusBadgeVariant(election.status)}>
                           {election.status.charAt(0).toUpperCase() + election.status.slice(1)}
                         </Badge>
                       </TableCell>
